@@ -3,7 +3,7 @@
 {{ header }}
 
 ********************************
-Time Series / Date functionality
+Time series / date functionality
 ********************************
 
 pandas contains extensive capabilities and features for working with time series data for all domains.
@@ -122,7 +122,7 @@ as ``np.nan`` does for float data.
 
 .. _timeseries.representation:
 
-Timestamps vs. Time Spans
+Timestamps vs. time spans
 -------------------------
 
 Timestamped data is the most basic type of time series data that associates
@@ -183,7 +183,7 @@ future releases.
 
 .. _timeseries.converting:
 
-Converting to Timestamps
+Converting to timestamps
 ------------------------
 
 To convert a :class:`Series` or list-like object of date-like objects e.g. strings,
@@ -235,7 +235,9 @@ inferred frequency upon creation:
 
     pd.DatetimeIndex(['2018-01-01', '2018-01-03', '2018-01-05'], freq='infer')
 
-Providing a Format Argument
+.. _timeseries.converting.format:
+
+Providing a format argument
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In addition to the required datetime string, a ``format`` argument can be passed to ensure specific parsing.
@@ -252,10 +254,8 @@ option, see the Python `datetime documentation`_.
 
 .. _datetime documentation: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-behavior
 
-Assembling Datetime from Multiple DataFrame Columns
+Assembling datetime from multiple DataFrame columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 0.18.1
 
 You can also pass a ``DataFrame`` of integer or string columns to assemble into a ``Series`` of ``Timestamps``.
 
@@ -279,7 +279,7 @@ You can pass only the columns that you need to assemble.
 * required: ``year``, ``month``, ``day``
 * optional: ``hour``, ``minute``, ``second``, ``millisecond``, ``microsecond``, ``nanosecond``
 
-Invalid Data
+Invalid data
 ~~~~~~~~~~~~
 
 The default behavior, ``errors='raise'``, is to raise when unparseable:
@@ -304,7 +304,7 @@ Pass ``errors='coerce'`` to convert unparseable data to ``NaT`` (not a time):
 
 .. _timeseries.converting.epoch:
 
-Epoch Timestamps
+Epoch timestamps
 ~~~~~~~~~~~~~~~~
 
 pandas supports converting integer or float epoch times to ``Timestamp`` and
@@ -320,6 +320,12 @@ which can be specified. These are computed from the starting point specified by 
 
    pd.to_datetime([1349720105100, 1349720105200, 1349720105300,
                    1349720105400, 1349720105500], unit='ms')
+
+.. note::
+
+   The ``unit`` parameter does not use the same strings as the ``format`` parameter
+   that was discussed :ref:`above<timeseries.converting.format>`). The
+   available units are listed on the documentation for :func:`pandas.to_datetime`.
 
 Constructing a :class:`Timestamp` or :class:`DatetimeIndex` with an epoch timestamp
 with the ``tz`` argument specified will currently localize the epoch timestamps to UTC
@@ -356,7 +362,7 @@ as timezone-naive timestamps and then localize to the appropriate timezone:
 
 .. _timeseries.converting.epoch_inverse:
 
-From Timestamps to Epoch
+From timestamps to epoch
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 To invert the operation from above, namely, to convert from a ``Timestamp`` to a 'unix' epoch:
@@ -378,8 +384,6 @@ We subtract the epoch (midnight at January 1, 1970 UTC) and then floor divide by
 Using the ``origin`` Parameter
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. versionadded:: 0.20.0
-
 Using the ``origin`` parameter, one can specify an alternative starting point for creation
 of a ``DatetimeIndex``. For example, to use 1960-01-01 as the starting date:
 
@@ -396,7 +400,7 @@ Commonly called 'unix epoch' or POSIX time.
 
 .. _timeseries.daterange:
 
-Generating Ranges of Timestamps
+Generating ranges of timestamps
 -------------------------------
 
 To generate an index with timestamps, you can use either the ``DatetimeIndex`` or
@@ -471,18 +475,8 @@ resulting ``DatetimeIndex``:
 
 .. _timeseries.custom-freq-ranges:
 
-Custom Frequency Ranges
+Custom frequency ranges
 ~~~~~~~~~~~~~~~~~~~~~~~
-
-.. warning::
-
-   This functionality was originally exclusive to ``cdate_range``, which is
-   deprecated as of version 0.21.0 in favor of ``bdate_range``.  Note that
-   ``cdate_range`` only utilizes the ``weekmask`` and ``holidays`` parameters
-   when custom business day, 'C', is passed as the frequency string. Support has
-   been expanded with ``bdate_range`` to work with any custom frequency string.
-
-.. versionadded:: 0.21.0
 
 ``bdate_range`` can also generate a range of custom frequency dates by using
 the ``weekmask`` and ``holidays`` parameters.  These parameters will only be
@@ -504,7 +498,7 @@ used if a custom frequency string is passed.
 
 .. _timeseries.timestamp-limits:
 
-Timestamp Limitations
+Timestamp limitations
 ---------------------
 
 Since pandas represents timestamps in nanosecond resolution, the time span that
@@ -530,7 +524,7 @@ The ``DatetimeIndex`` class contains many time series related optimizations:
 * A large range of dates for various offsets are pre-computed and cached
   under the hood in order to make generating subsequent date ranges very fast
   (just have to grab a slice).
-* Fast shifting using the ``shift`` and ``tshift`` method on pandas objects.
+* Fast shifting using the ``shift`` method on pandas objects.
 * Unioning of overlapping ``DatetimeIndex`` objects with the same frequency is
   very fast (important for fast data alignment).
 * Quick access to date fields via properties such as ``year``, ``month``, etc.
@@ -561,7 +555,7 @@ intelligent functionality like selection, slicing, etc.
 
 .. _timeseries.partialindexing:
 
-Partial String Indexing
+Partial string indexing
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 Dates and strings that parse to timestamps can be passed as indexing parameters:
@@ -619,8 +613,6 @@ We are stopping on the included end-point as it is part of the index:
 
    dft['2013-1-15':'2013-1-15 12:30:00']
 
-.. versionadded:: 0.18.0
-
 ``DatetimeIndex`` partial string indexing also works on a ``DataFrame`` with a ``MultiIndex``:
 
 .. ipython:: python
@@ -648,7 +640,7 @@ Slicing with string indexing also honors UTC offset.
 
 .. _timeseries.slice_vs_exact_match:
 
-Slice vs. Exact Match
+Slice vs. exact match
 ~~~~~~~~~~~~~~~~~~~~~
 
 .. versionchanged:: 0.20.0
@@ -719,7 +711,7 @@ Note also that ``DatetimeIndex`` resolution cannot be less precise than day.
     series_monthly['2011-12']  # returns Series
 
 
-Exact Indexing
+Exact indexing
 ~~~~~~~~~~~~~~
 
 As discussed in previous section, indexing a ``DatetimeIndex`` with a partial string depends on the "accuracy" of the period, in other words how specific the interval is in relation to the resolution of the index. In contrast, indexing with ``Timestamp`` or ``datetime`` objects is exact, because the objects have exact meaning. These also follow the semantics of *including both endpoints*.
@@ -738,7 +730,7 @@ With no defaults.
        datetime.datetime(2013, 2, 28, 10, 12, 0)]
 
 
-Truncating & Fancy Indexing
+Truncating & fancy indexing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A :meth:`~DataFrame.truncate` convenience function is provided that is similar
@@ -761,37 +753,9 @@ regularity will result in a ``DatetimeIndex``, although frequency is lost:
 
    ts2[[0, 2, 6]].index
 
-.. _timeseries.iterating-label:
-
-Iterating through groups
-------------------------
-
-With the ``Resampler`` object in hand, iterating through the grouped data is very
-natural and functions similarly to :py:func:`itertools.groupby`:
-
-.. ipython:: python
-
-   small = pd.Series(
-       range(6),
-       index=pd.to_datetime(['2017-01-01T00:00:00',
-                             '2017-01-01T00:30:00',
-                             '2017-01-01T00:31:00',
-                             '2017-01-01T01:00:00',
-                             '2017-01-01T03:00:00',
-                             '2017-01-01T03:05:00'])
-   )
-   resampled = small.resample('H')
-
-   for name, group in resampled:
-       print("Group: ", name)
-       print("-" * 27)
-       print(group, end="\n\n")
-
-See :ref:`groupby.iterating-label` or :class:`Resampler.__iter__` for more.
-
 .. _timeseries.components:
 
-Time/Date Components
+Time/date components
 --------------------
 
 There are several time/date properties that one can access from ``Timestamp`` or a collection of timestamps like a ``DatetimeIndex``.
@@ -816,7 +780,6 @@ There are several time/date properties that one can access from ``Timestamp`` or
     week,"The week ordinal of the year"
     dayofweek,"The number of the day of the week with Monday=0, Sunday=6"
     weekday,"The number of the day of the week with Monday=0, Sunday=6"
-    weekday_name,"The name of the day in a week (ex: Friday)"
     quarter,"Quarter of the date: Jan-Mar = 1, Apr-Jun = 2, etc."
     days_in_month,"The number of days in the month of the datetime"
     is_month_start,"Logical indicating if first day of month (defined by frequency)"
@@ -831,9 +794,19 @@ Furthermore, if you have a ``Series`` with datetimelike values, then you can
 access these properties via the ``.dt`` accessor, as detailed in the section
 on :ref:`.dt accessors<basics.dt_accessors>`.
 
+.. versionadded:: 1.1.0
+
+You may obtain the year, week and day components of the ISO year from the ISO 8601 standard:
+
+.. ipython:: python
+
+   idx = pd.date_range(start='2019-12-29', freq='D', periods=4)
+   idx.isocalendar()
+   idx.to_series().dt.isocalendar()
+
 .. _timeseries.offsets:
 
-DateOffset Objects
+DateOffset objects
 ------------------
 
 In the preceding examples, frequency strings (e.g. ``'D'``) were used to specify
@@ -950,7 +923,7 @@ in the operation).
 .. _relativedelta documentation: https://dateutil.readthedocs.io/en/stable/relativedelta.html
 
 
-Parametric Offsets
+Parametric offsets
 ~~~~~~~~~~~~~~~~~~
 
 Some of the offsets can be "parameterized" when created to result in different
@@ -986,7 +959,7 @@ Another example is parameterizing ``YearEnd`` with the specific ending month:
 
 .. _timeseries.offsetseries:
 
-Using Offsets with ``Series`` / ``DatetimeIndex``
+Using offsets with ``Series`` / ``DatetimeIndex``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Offsets can be used with either a ``Series`` or ``DatetimeIndex`` to
@@ -1025,7 +998,7 @@ calculate significantly slower and will show a ``PerformanceWarning``
 
 .. _timeseries.custombusinessdays:
 
-Custom Business Days
+Custom business days
 ~~~~~~~~~~~~~~~~~~~~
 
 The ``CDay`` or ``CustomBusinessDay`` class provides a parametric
@@ -1099,7 +1072,7 @@ in the usual way.
 
 .. _timeseries.businesshour:
 
-Business Hour
+Business hour
 ~~~~~~~~~~~~~
 
 The ``BusinessHour`` class provides a business hour representation on ``BusinessDay``,
@@ -1161,7 +1134,7 @@ Valid business hours are distinguished by whether it started from valid ``Busine
     pd.Timestamp('2014-08-01 17:00') + bh
     pd.Timestamp('2014-08-01 23:00') + bh
 
-    # Although 2014-08-02 is Satuaday,
+    # Although 2014-08-02 is Saturday,
     # it is valid because it starts from 08-01 (Friday).
     pd.Timestamp('2014-08-02 04:00') + bh
 
@@ -1200,10 +1173,8 @@ following subsection.
 
 .. _timeseries.custombusinesshour:
 
-Custom Business Hour
+Custom business hour
 ~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 0.18.1
 
 The ``CustomBusinessHour`` is a mixture of ``BusinessHour`` and ``CustomBusinessDay`` which
 allows you to specify arbitrary holidays. ``CustomBusinessHour`` works as the same
@@ -1233,7 +1204,7 @@ You can use keyword arguments supported by either ``BusinessHour`` and ``CustomB
 
 .. _timeseries.offset_aliases:
 
-Offset Aliases
+Offset aliases
 ~~~~~~~~~~~~~~
 
 A number of string aliases are given to useful common time series
@@ -1271,7 +1242,7 @@ frequencies. We will refer to these aliases as *offset aliases*.
     "U, us", "microseconds"
     "N", "nanoseconds"
 
-Combining Aliases
+Combining aliases
 ~~~~~~~~~~~~~~~~~
 
 As we have seen previously, the alias and the offset instance are fungible in
@@ -1291,7 +1262,7 @@ You can combine together day and intraday offsets:
 
    pd.date_range(start, periods=10, freq='1D10U')
 
-Anchored Offsets
+Anchored offsets
 ~~~~~~~~~~~~~~~~
 
 For some frequencies you can specify an anchoring suffix:
@@ -1336,7 +1307,7 @@ These can be used as arguments to ``date_range``, ``bdate_range``, constructors
 for ``DatetimeIndex``, as well as various other timeseries-related functions
 in pandas.
 
-Anchored Offset Semantics
+Anchored offset semantics
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For those offsets that are anchored to the start or end of specific
@@ -1384,7 +1355,7 @@ it is rolled forward to the next anchor point.
 
 .. _timeseries.holiday:
 
-Holidays / Holiday Calendars
+Holidays / holiday calendars
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Holidays and calendars provide a simple way to define holiday rules to be used
@@ -1481,10 +1452,10 @@ or calendars with additional rules.
 
 .. _timeseries.advanced_datetime:
 
-Time Series-Related Instance Methods
+Time series-related instance methods
 ------------------------------------
 
-Shifting / Lagging
+Shifting / lagging
 ~~~~~~~~~~~~~~~~~~
 
 One may want to *shift* or *lag* the values in a time series back and forward in
@@ -1499,25 +1470,21 @@ the pandas objects.
 
 The ``shift`` method accepts an ``freq`` argument which can accept a
 ``DateOffset`` class or other ``timedelta``-like object or also an
-:ref:`offset alias <timeseries.offset_aliases>`:
+:ref:`offset alias <timeseries.offset_aliases>`.
+
+When ``freq`` is specified, ``shift`` method changes all the dates in the index
+rather than changing the alignment of the data and the index:
 
 .. ipython:: python
 
+   ts.shift(5, freq='D')
    ts.shift(5, freq=pd.offsets.BDay())
    ts.shift(5, freq='BM')
 
-Rather than changing the alignment of the data and the index, ``DataFrame`` and
-``Series`` objects also have a :meth:`~Series.tshift` convenience method that
-changes all the dates in the index by a specified number of offsets:
+Note that with when ``freq`` is specified, the leading entry is no longer NaN
+because the data is not being realigned.
 
-.. ipython:: python
-
-   ts.tshift(5, freq='D')
-
-Note that with ``tshift``, the leading entry is no longer NaN because the data
-is not being realigned.
-
-Frequency Conversion
+Frequency conversion
 ~~~~~~~~~~~~~~~~~~~~
 
 The primary function for changing frequencies is the :meth:`~Series.asfreq`
@@ -1539,13 +1506,13 @@ method for any gaps that may appear after the frequency conversion.
 
    ts.asfreq(pd.offsets.BDay(), method='pad')
 
-Filling Forward / Backward
+Filling forward / backward
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Related to ``asfreq`` and ``reindex`` is :meth:`~Series.fillna`, which is
 documented in the :ref:`missing data section <missing_data.fillna>`.
 
-Converting to Python Datetimes
+Converting to Python datetimes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``DatetimeIndex`` can be converted to an array of Python native
@@ -1556,11 +1523,6 @@ Converting to Python Datetimes
 Resampling
 ----------
 
-.. warning::
-
-   The interface to ``.resample`` has changed in 0.18.0 to be more groupby-like and hence more flexible.
-   See the :ref:`whatsnew docs <whatsnew_0180.breaking.resample>` for a comparison with prior versions.
-
 Pandas has a simple, powerful, and efficient functionality for performing
 resampling operations during frequency conversion (e.g., converting secondly
 data into 5-minutely data). This is extremely common in, but not limited to,
@@ -1570,8 +1532,8 @@ financial applications.
 on each of its groups. See some :ref:`cookbook examples <cookbook.resample>` for
 some advanced strategies.
 
-Starting in version 0.18.1, the ``resample()`` function can be used directly from
-``DataFrameGroupBy`` objects, see the :ref:`groupby docs <groupby.transform.window_resample>`.
+The ``resample()`` method can be used directly from ``DataFrameGroupBy`` objects,
+see the :ref:`groupby docs <groupby.transform.window_resample>`.
 
 .. note::
 
@@ -1615,10 +1577,9 @@ end of the interval is closed:
 
    ts.resample('5Min', closed='left').mean()
 
-Parameters like ``label`` and ``loffset`` are used to manipulate the resulting
-labels. ``label`` specifies whether the result is labeled with the beginning or
-the end of the interval. ``loffset`` performs a time adjustment on the output
-labels.
+Parameters like ``label`` are used to manipulate the resulting labels.
+``label`` specifies whether the result is labeled with the beginning or
+the end of the interval.
 
 .. ipython:: python
 
@@ -1626,26 +1587,32 @@ labels.
 
    ts.resample('5Min', label='left').mean()
 
-   ts.resample('5Min', label='left', loffset='1s').mean()
+.. warning::
 
-.. note::
-
-    The default values for ``label`` and ``closed`` is 'left' for all
+    The default values for ``label`` and ``closed`` is '**left**' for all
     frequency offsets except for 'M', 'A', 'Q', 'BM', 'BA', 'BQ', and 'W'
     which all have a default of 'right'.
 
+    This might unintendedly lead to looking ahead, where the value for a later
+    time is pulled back to a previous time as in the following example with
+    the :class:`~pandas.tseries.offsets.BusinessDay` frequency:
+
     .. ipython:: python
 
-       rng2 = pd.date_range('1/1/2012', end='3/31/2012', freq='D')
-       ts2 = pd.Series(range(len(rng2)), index=rng2)
+        s = pd.date_range('2000-01-01', '2000-01-05').to_series()
+        s.iloc[2] = pd.NaT
+        s.dt.day_name()
 
-       # default: label='right', closed='right'
-       ts2.resample('M').max()
+        # default: label='left', closed='left'
+        s.resample('B').last().dt.day_name()
 
-       # default: label='left', closed='left'
-       ts2.resample('SM').max()
+    Notice how the value for Sunday got pulled back to the previous Friday.
+    To get the behavior where the value for Sunday is pushed to Monday, use
+    instead
 
-       ts2.resample('SM', label='right', closed='right').max()
+    .. ipython:: python
+
+        s.resample('B', label='right', closed='right').last().dt.day_name()
 
 The ``axis`` parameter can be set to 0 or 1 and allows you to resample the
 specified axis for a ``DataFrame``.
@@ -1674,7 +1641,7 @@ For upsampling, you can specify a way to upsample and the ``limit`` parameter to
 
    ts[:2].resample('250L').ffill(limit=2)
 
-Sparse Resampling
+Sparse resampling
 ~~~~~~~~~~~~~~~~~
 
 Sparse timeseries are the ones where you have a lot fewer points relative
@@ -1796,10 +1763,90 @@ level of ``MultiIndex``, its name or location can be passed to the
 
    df.resample('M', level='d').sum()
 
+.. _timeseries.iterating-label:
+
+Iterating through groups
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the ``Resampler`` object in hand, iterating through the grouped data is very
+natural and functions similarly to :py:func:`itertools.groupby`:
+
+.. ipython:: python
+
+   small = pd.Series(
+       range(6),
+       index=pd.to_datetime(['2017-01-01T00:00:00',
+                             '2017-01-01T00:30:00',
+                             '2017-01-01T00:31:00',
+                             '2017-01-01T01:00:00',
+                             '2017-01-01T03:00:00',
+                             '2017-01-01T03:05:00'])
+   )
+   resampled = small.resample('H')
+
+   for name, group in resampled:
+       print("Group: ", name)
+       print("-" * 27)
+       print(group, end="\n\n")
+
+See :ref:`groupby.iterating-label` or :class:`Resampler.__iter__` for more.
+
+.. _timeseries.adjust-the-start-of-the-bins:
+
+Use `origin` or `offset` to adjust the start of the bins
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 1.1.0
+
+The bins of the grouping are adjusted based on the beginning of the day of the time series starting point. This works well with frequencies that are multiples of a day (like `30D`) or that divide a day evenly (like `90s` or `1min`). This can create inconsistencies with some frequencies that do not meet this criteria. To change this behavior you can specify a fixed Timestamp with the argument ``origin``.
+
+For example:
+
+.. ipython:: python
+
+    start, end = '2000-10-01 23:30:00', '2000-10-02 00:30:00'
+    middle = '2000-10-02 00:00:00'
+    rng = pd.date_range(start, end, freq='7min')
+    ts = pd.Series(np.arange(len(rng)) * 3, index=rng)
+    ts
+
+Here we can see that, when using ``origin`` with its default value (``'start_day'``), the result after ``'2000-10-02 00:00:00'`` are not identical depending on the start of time series:
+
+.. ipython:: python
+
+    ts.resample('17min', origin='start_day').sum()
+    ts[middle:end].resample('17min', origin='start_day').sum()
+
+
+Here we can see that, when setting ``origin`` to ``'epoch'``, the result after ``'2000-10-02 00:00:00'`` are identical depending on the start of time series:
+
+.. ipython:: python
+
+   ts.resample('17min', origin='epoch').sum()
+   ts[middle:end].resample('17min', origin='epoch').sum()
+
+
+If needed you can use a custom timestamp for ``origin``:
+
+.. ipython:: python
+
+   ts.resample('17min', origin='2001-01-01').sum()
+   ts[middle:end].resample('17min', origin=pd.Timestamp('2001-01-01')).sum()
+
+If needed you can just adjust the bins with an ``offset`` Timedelta that would be added to the default ``origin``.
+Those two examples are equivalent for this time series:
+
+.. ipython:: python
+
+    ts.resample('17min', origin='start').sum()
+    ts.resample('17min', offset='23h30min').sum()
+
+
+Note the use of ``'start'`` for ``origin`` on the last example. In that case, ``origin`` will be set to the first value of the timeseries.
 
 .. _timeseries.periods:
 
-Time Span Representation
+Time span representation
 ------------------------
 
 Regular intervals of time are represented by ``Period`` objects in pandas while
@@ -1931,10 +1978,8 @@ objects:
 
 .. _timeseries.period_dtype:
 
-Period Dtypes
+Period dtypes
 ~~~~~~~~~~~~~
-
-.. versionadded:: 0.19.0
 
 ``PeriodIndex`` has a custom ``period`` dtype. This is a pandas extension
 dtype similar to the :ref:`timezone aware dtype <timeseries.timezone_series>` (``datetime64[ns, tz]``).
@@ -1966,8 +2011,12 @@ The ``period`` dtype can be used in ``.astype(...)``. It allows one to change th
    dti.astype('period[M]')
 
 
-PeriodIndex Partial String Indexing
+PeriodIndex partial string indexing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+PeriodIndex now supports partial string slicing with non-monotonic indexes.
+
+.. versionadded:: 1.1.0
 
 You can pass in dates and strings to ``Series`` and ``DataFrame`` with ``PeriodIndex``, in the same manner as ``DatetimeIndex``. For details, refer to :ref:`DatetimeIndex Partial String Indexing <timeseries.partialindexing>`.
 
@@ -1999,7 +2048,8 @@ As with ``DatetimeIndex``, the endpoints will be included in the result. The exa
 
    dfp['2013-01-01 10H':'2013-01-01 11H']
 
-Frequency Conversion and Resampling with PeriodIndex
+
+Frequency conversion and resampling with PeriodIndex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The frequency of ``Period`` and ``PeriodIndex`` can be converted via the ``asfreq``
 method. Let's start with the fiscal year 2011, ending in December:
@@ -2070,7 +2120,7 @@ frequencies ``Q-JAN`` through ``Q-DEC``.
 
 .. _timeseries.interchange:
 
-Converting Between Representations
+Converting between representations
 ----------------------------------
 
 Timestamped data can be converted to PeriodIndex-ed data using ``to_period``
@@ -2114,7 +2164,7 @@ the quarter end:
 
 .. _timeseries.oob:
 
-Representing Out-of-Bounds Spans
+Representing out-of-bounds spans
 --------------------------------
 
 If you have data that is outside of the ``Timestamp`` bounds, see :ref:`Timestamp limitations <timeseries.timestamp-limits>`,
@@ -2148,7 +2198,7 @@ These can easily be converted to a ``PeriodIndex``:
 
 .. _timeseries.timezone:
 
-Time Zone Handling
+Time zone handling
 ------------------
 
 pandas provides rich support for working with timestamps in different time
@@ -2156,7 +2206,7 @@ zones using the ``pytz`` and ``dateutil`` libraries or class:`datetime.timezone`
 objects from the standard library.
 
 
-Working with Time Zones
+Working with time zones
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 By default, pandas objects are time zone unaware:
@@ -2269,6 +2319,24 @@ you can use the ``tz_convert`` method.
     Instead, the datetime needs to be localized using the ``localize`` method
     on the ``pytz`` time zone object.
 
+.. warning::
+
+    If you are using dates beyond 2038-01-18, due to current deficiencies
+    in the underlying libraries caused by the year 2038 problem, daylight saving time (DST) adjustments
+    to timezone aware dates will not be applied. If and when the underlying libraries are fixed,
+    the DST transitions will be applied. It should be noted though, that time zone data for far future time zones
+    are likely to be inaccurate, as they are simple extrapolations of the current set of (regularly revised) rules.
+
+    For example, for two dates that are in British Summer Time (and so would normally be GMT+1), both the following asserts evaluate as true:
+
+    .. ipython:: python
+
+       d_2037 = '2037-03-31T010101'
+       d_2038 = '2038-03-31T010101'
+       DST = 'Europe/London'
+       assert pd.Timestamp(d_2037, tz=DST) != pd.Timestamp(d_2037, tz='GMT')
+       assert pd.Timestamp(d_2038, tz=DST) == pd.Timestamp(d_2038, tz='GMT')
+
 Under the hood, all timestamps are stored in UTC. Values from a time zone aware
 :class:`DatetimeIndex` or :class:`Timestamp` will have their fields (day, hour, minute, etc.)
 localized to the time zone. However, timestamps with the same UTC value are
@@ -2310,9 +2378,38 @@ To remove time zone information, use ``tz_localize(None)`` or ``tz_convert(None)
    # tz_convert(None) is identical to tz_convert('UTC').tz_localize(None)
    didx.tz_convert('UTC').tz_localize(None)
 
+.. _timeseries.fold:
+
+Fold
+~~~~
+
+.. versionadded:: 1.1.0
+
+For ambiguous times, pandas supports explicitly specifying the keyword-only fold argument.
+Due to daylight saving time, one wall clock time can occur twice when shifting
+from summer to winter time; fold describes whether the datetime-like corresponds
+to the first (0) or the second time (1) the wall clock hits the ambiguous time.
+Fold is supported only for constructing from naive ``datetime.datetime``
+(see `datetime documentation <https://docs.python.org/3/library/datetime.html>`__ for details) or from :class:`Timestamp`
+or for constructing from components (see below). Only ``dateutil`` timezones are supported
+(see `dateutil documentation <https://dateutil.readthedocs.io/en/stable/tz.html#dateutil.tz.enfold>`__
+for ``dateutil`` methods that deal with ambiguous datetimes) as ``pytz``
+timezones do not support fold (see `pytz documentation <http://pytz.sourceforge.net/index.html>`__
+for details on how ``pytz`` deals with ambiguous datetimes). To localize an ambiguous datetime
+with ``pytz``, please use :meth:`Timestamp.tz_localize`. In general, we recommend to rely
+on :meth:`Timestamp.tz_localize` when localizing ambiguous datetimes if you need direct
+control over how they are handled.
+
+.. ipython:: python
+
+   pd.Timestamp(datetime.datetime(2019, 10, 27, 1, 30, 0, 0),
+                tz='dateutil/Europe/London', fold=0)
+   pd.Timestamp(year=2019, month=10, day=27, hour=1, minute=30,
+                tz='dateutil/Europe/London', fold=1)
+
 .. _timeseries.timezone_ambiguous:
 
-Ambiguous Times when Localizing
+Ambiguous times when localizing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ``tz_localize`` may not be able to determine the UTC offset of a timestamp
@@ -2346,7 +2443,7 @@ Handle these ambiguous times by specifying the following.
 
 .. _timeseries.timezone_nonexistent:
 
-Nonexistent Times when Localizing
+Nonexistent times when localizing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A DST transition may also shift the local time ahead by 1 hour creating nonexistent
@@ -2384,7 +2481,7 @@ Transform nonexistent times to ``NaT`` or shift the times.
 
 .. _timeseries.timezone_series:
 
-Time Zone Series Operations
+Time zone series operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A :class:`Series` with time zone **naive** values is

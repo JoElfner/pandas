@@ -3,7 +3,7 @@
 {{ header }}
 
 *****************************
-Group By: split-apply-combine
+Group by: split-apply-combine
 *****************************
 
 By "group by" we are referring to a process involving one or more of the following
@@ -199,6 +199,33 @@ For example, the groups created by ``groupby()`` below are in the order they app
    df3.groupby(['X']).get_group('B')
 
 
+.. _groupby.dropna:
+
+.. versionadded:: 1.1.0
+
+GroupBy dropna
+^^^^^^^^^^^^^^
+
+By default ``NA`` values are excluded from group keys during the ``groupby`` operation. However,
+in case you want to include ``NA`` values in group keys, you could pass ``dropna=False`` to achieve it.
+
+.. ipython:: python
+
+    df_list = [[1, 2, 3], [1, None, 4], [2, 1, 3], [1, 2, 2]]
+    df_dropna = pd.DataFrame(df_list, columns=["a", "b", "c"])
+
+    df_dropna
+
+.. ipython:: python
+
+    # Default `dropna` is set to True, which will exclude NaNs in keys
+    df_dropna.groupby(by=["b"], dropna=True).sum()
+
+    # In order to allow NaN in keys, set `dropna` to False
+    df_dropna.groupby(by=["b"], dropna=False).sum()
+
+The default setting of ``dropna`` argument is ``True`` which means ``NA`` are not included in group keys.
+
 
 .. _groupby.attributes:
 
@@ -311,8 +338,6 @@ Grouping with multiple levels is supported.
    s
    s.groupby(level=['first', 'second']).sum()
 
-.. versionadded:: 0.20
-
 Index level names may be supplied as keys.
 
 .. ipython:: python
@@ -321,7 +346,7 @@ Index level names may be supplied as keys.
 
 More on the ``sum`` function and aggregation later.
 
-Grouping DataFrame with Index Levels and Columns
+Grouping DataFrame with Index levels and columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 A DataFrame may be grouped by a combination of columns and index levels by
 specifying the column names as strings and the index levels as ``pd.Grouper``
@@ -352,8 +377,6 @@ Index levels may also be specified by name.
 .. ipython:: python
 
    df.groupby([pd.Grouper(level='second'), 'A']).sum()
-
-.. versionadded:: 0.20
 
 Index level names may be specified as keys directly to ``groupby``.
 
@@ -568,6 +591,100 @@ For a grouped ``DataFrame``, you can rename in a similar manner:
                             'mean': 'bar',
                             'std': 'baz'}))
 
+.. note::
+
+   In general, the output column names should be unique. You can't apply
+   the same function (or two functions with the same name) to the same
+   column.
+
+   .. ipython:: python
+      :okexcept:
+
+      grouped['C'].agg(['sum', 'sum'])
+
+
+   Pandas *does* allow you to provide multiple lambdas. In this case, pandas
+   will mangle the name of the (nameless) lambda functions, appending ``_<i>``
+   to each subsequent lambda.
+
+   .. ipython:: python
+
+      grouped['C'].agg([lambda x: x.max() - x.min(),
+                        lambda x: x.median() - x.mean()])
+
+
+
+.. _groupby.aggregate.named:
+
+Named aggregation
+~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 0.25.0
+
+To support column-specific aggregation *with control over the output column names*, pandas
+accepts the special syntax in :meth:`GroupBy.agg`, known as "named aggregation", where
+
+- The keywords are the *output* column names
+- The values are tuples whose first element is the column to select
+  and the second element is the aggregation to apply to that column. Pandas
+  provides the ``pandas.NamedAgg`` namedtuple with the fields ``['column', 'aggfunc']``
+  to make it clearer what the arguments are. As usual, the aggregation can
+  be a callable or a string alias.
+
+.. ipython:: python
+
+   animals = pd.DataFrame({'kind': ['cat', 'dog', 'cat', 'dog'],
+                           'height': [9.1, 6.0, 9.5, 34.0],
+                           'weight': [7.9, 7.5, 9.9, 198.0]})
+   animals
+
+   animals.groupby("kind").agg(
+       min_height=pd.NamedAgg(column='height', aggfunc='min'),
+       max_height=pd.NamedAgg(column='height', aggfunc='max'),
+       average_weight=pd.NamedAgg(column='weight', aggfunc=np.mean),
+   )
+
+
+``pandas.NamedAgg`` is just a ``namedtuple``. Plain tuples are allowed as well.
+
+.. ipython:: python
+
+   animals.groupby("kind").agg(
+       min_height=('height', 'min'),
+       max_height=('height', 'max'),
+       average_weight=('weight', np.mean),
+   )
+
+
+If your desired output column names are not valid python keywords, construct a dictionary
+and unpack the keyword arguments
+
+.. ipython:: python
+
+   animals.groupby("kind").agg(**{
+       'total weight': pd.NamedAgg(column='weight', aggfunc=sum),
+   })
+
+Additional keyword arguments are not passed through to the aggregation functions. Only pairs
+of ``(column, aggfunc)`` should be passed as ``**kwargs``. If your aggregation functions
+requires additional arguments, partially apply them with :meth:`functools.partial`.
+
+.. note::
+
+   For Python 3.5 and earlier, the order of ``**kwargs`` in a functions was not
+   preserved. This means that the output column ordering would not be
+   consistent. To ensure consistent ordering, the keys (and so output columns)
+   will always be sorted for Python 3.5.
+
+Named aggregation is also valid for Series groupby aggregations. In this case there's
+no column selection, so the values are just the functions.
+
+.. ipython:: python
+
+   animals.groupby("kind").height.agg(
+       min_height='min',
+       max_height='max',
+   )
 
 Applying different functions to DataFrame columns
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -587,19 +704,6 @@ must be either implemented on GroupBy or available via :ref:`dispatching
 .. ipython:: python
 
    grouped.agg({'C': 'sum', 'D': 'std'})
-
-.. note::
-
-    If you pass a dict to ``aggregate``, the ordering of the output columns is
-    non-deterministic. If you want to be sure the output columns will be in a specific
-    order, you can use an ``OrderedDict``.  Compare the output of the following two commands:
-
-.. ipython:: python
-
-   from collections import OrderedDict
-
-   grouped.agg({'D': 'std', 'C': 'mean'})
-   grouped.agg(OrderedDict([('D', 'std'), ('C', 'mean')]))
 
 .. _groupby.aggregate.cython:
 
@@ -746,13 +850,10 @@ and that the transformed data contains no NAs.
 
 .. _groupby.transform.window_resample:
 
-New syntax to window and resample operations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-.. versionadded:: 0.18.1
+Window and resample operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Working with the resample, expanding or rolling operations on the groupby
-level used to require the application of helper functions. However,
-now it is possible to use ``resample()``, ``expanding()`` and
+It is possible to use ``resample()``, ``expanding()`` and
 ``rolling()`` as methods on groupbys.
 
 The example below will apply the ``rolling()`` method on the samples of
@@ -947,6 +1048,73 @@ that is itself a series, and possibly upcast the result to a DataFrame:
    the output as well as set the indices.
 
 
+Numba Accelerated Routines
+--------------------------
+
+.. versionadded:: 1.1
+
+If `Numba <https://numba.pydata.org/>`__ is installed as an optional dependency, the ``transform`` and
+``aggregate`` methods support ``engine='numba'`` and ``engine_kwargs`` arguments. The ``engine_kwargs``
+argument is a dictionary of keyword arguments that will be passed into the
+`numba.jit decorator <https://numba.pydata.org/numba-doc/latest/reference/jit-compilation.html#numba.jit>`__.
+These keyword arguments will be applied to the passed function. Currently only ``nogil``, ``nopython``,
+and ``parallel`` are supported, and their default values are set to ``False``, ``True`` and ``False`` respectively.
+
+The function signature must start with ``values, index`` **exactly** as the data belonging to each group
+will be passed into ``values``, and the group index will be passed into ``index``.
+
+.. warning::
+
+   When using ``engine='numba'``, there will be no "fall back" behavior internally. The group
+   data and group index will be passed as numpy arrays to the JITed user defined function, and no
+   alternative execution attempts will be tried.
+
+.. note::
+
+   In terms of performance, **the first time a function is run using the Numba engine will be slow**
+   as Numba will have some function compilation overhead. However, the compiled functions are cached,
+   and subsequent calls will be fast. In general, the Numba engine is performant with
+   a larger amount of data points (e.g. 1+ million).
+
+.. code-block:: ipython
+
+   In [1]: N = 10 ** 3
+
+   In [2]: data = {0: [str(i) for i in range(100)] * N, 1: list(range(100)) * N}
+
+   In [3]: df = pd.DataFrame(data, columns=[0, 1])
+
+   In [4]: def f_numba(values, index):
+      ...:     total = 0
+      ...:     for i, value in enumerate(values):
+      ...:         if i % 2:
+      ...:             total += value + 5
+      ...:         else:
+      ...:             total += value * 2
+      ...:     return total
+      ...:
+
+   In [5]: def f_cython(values):
+      ...:     total = 0
+      ...:     for i, value in enumerate(values):
+      ...:         if i % 2:
+      ...:             total += value + 5
+      ...:         else:
+      ...:             total += value * 2
+      ...:     return total
+      ...:
+
+   In [6]: groupby = df.groupby(0)
+   # Run the first time, compilation time will affect performance
+   In [7]: %timeit -r 1 -n 1 groupby.aggregate(f_numba, engine='numba')  # noqa: E225
+   2.14 s ± 0 ns per loop (mean ± std. dev. of 1 run, 1 loop each)
+   # Function is cached and performance will improve
+   In [8]: %timeit groupby.aggregate(f_numba, engine='numba')
+   4.93 ms ± 32.3 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+
+   In [9]: %timeit groupby.aggregate(f_cython, engine='cython')
+   18.6 ms ± 84.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+
 Other useful features
 ---------------------
 
@@ -1064,7 +1232,7 @@ can be used as group keys. If so, the order of the levels will be preserved:
 
 .. _groupby.specify:
 
-Grouping with a Grouper specification
+Grouping with a grouper specification
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You may need to specify a bit more data to properly group. You can
@@ -1196,8 +1364,6 @@ To see the order in which each row appears within its group, use the
 Enumerate groups
 ~~~~~~~~~~~~~~~~
 
-.. versionadded:: 0.20.2
-
 To see the ordering of the groups (as opposed to the order of rows
 within a group given by ``cumcount``) you can use
 :meth:`~pandas.core.groupby.DataFrameGroupBy.ngroup`.
@@ -1254,8 +1420,6 @@ See the :ref:`visualization documentation<visualization.box>` for more.
 
 Piping function calls
 ~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 0.21.0
 
 Similar to the functionality provided by ``DataFrame`` and ``Series``, functions
 that take ``GroupBy`` objects can be chained together using a ``pipe`` method to
@@ -1346,7 +1510,7 @@ introduction <categorical>` and the
 
     dfg.groupby(["A", [0, 0, 0, 1, 1]]).ngroup()
 
-Groupby by Indexer to 'resample' data
+Groupby by indexer to 'resample' data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Resampling produces new hypothetical samples (resamples) from already existing observed data or from a model that generates data. These new samples are similar to the pre-existing samples.

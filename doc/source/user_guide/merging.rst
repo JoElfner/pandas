@@ -10,14 +10,17 @@
    p = doctools.TablePlotter()
 
 
-****************************
-Merge, join, and concatenate
-****************************
+************************************
+Merge, join, concatenate and compare
+************************************
 
 pandas provides various facilities for easily combining together Series or
 DataFrame with various kinds of set logic for the indexes
 and relational algebra functionality in the case of join / merge-type
 operations.
+
+In addition, pandas also provides utilities to compare two Series or DataFrame
+and summarize their differences.
 
 .. _merging.concat:
 
@@ -70,9 +73,8 @@ some configurable handling of "what to do with the other axes":
 
 ::
 
-    pd.concat(objs, axis=0, join='outer', join_axes=None, ignore_index=False,
-              keys=None, levels=None, names=None, verify_integrity=False,
-              copy=True)
+    pd.concat(objs, axis=0, join='outer', ignore_index=False, keys=None,
+              levels=None, names=None, verify_integrity=False, copy=True)
 
 * ``objs`` : a sequence or mapping of Series or DataFrame objects. If a
   dict is passed, the sorted keys will be used as the `keys` argument, unless
@@ -87,8 +89,6 @@ some configurable handling of "what to do with the other axes":
   n - 1. This is useful if you are concatenating objects where the
   concatenation axis does not have meaningful indexing information. Note
   the index values on the other axes are still respected in the join.
-* ``join_axes`` : list of Index objects. Specific indexes to use for the other
-  n - 1 axes instead of performing inner/outer set logic.
 * ``keys`` : sequence, default None. Construct hierarchical index using the
   passed keys as the outermost level. If multiple levels passed, should
   contain tuples.
@@ -147,12 +147,11 @@ Set logic on the other axes
 
 When gluing together multiple DataFrames, you have a choice of how to handle
 the other axes (other than the one being concatenated). This can be done in
-the following three ways:
+the following two ways:
 
 * Take the union of them all, ``join='outer'``. This is the default
   option as it results in zero information loss.
 * Take the intersection, ``join='inner'``.
-* Use a specific index, as passed to the ``join_axes`` argument.
 
 Here is an example of each of these methods. First, the default ``join='outer'``
 behavior:
@@ -202,7 +201,13 @@ DataFrame:
 
 .. ipython:: python
 
-   result = pd.concat([df1, df4], axis=1, join_axes=[df1.index])
+   result = pd.concat([df1, df4], axis=1).reindex(df1.index)
+
+Similarly, we could index before the concatenation:
+
+.. ipython:: python
+
+    pd.concat([df1, df4.reindex(df1.index)], axis=1)
 
 .. ipython:: python
    :suppress:
@@ -571,8 +576,6 @@ all standard database join operations between ``DataFrame`` or named ``Series`` 
       dataset.
     * "many_to_many" or "m:m": allowed, but does not result in checks.
 
-  .. versionadded:: 0.21.0
-
 .. note::
 
    Support for specifying index levels as the ``on``, ``left_on``, and
@@ -722,6 +725,27 @@ either the left or right tables, the values in the joined table will be
           labels=['left', 'right'], vertical=False);
    plt.close('all');
 
+You can merge a mult-indexed Series and a DataFrame, if the names of
+the MultiIndex correspond to the columns from the DataFrame. Transform
+the Series to a DataFrame using :meth:`Series.reset_index` before merging,
+as shown in the following example.
+
+.. ipython:: python
+
+   df = pd.DataFrame({"Let": ["A", "B", "C"], "Num": [1, 2, 3]})
+   df
+
+   ser = pd.Series(
+       ["a", "b", "c", "d", "e", "f"],
+       index=pd.MultiIndex.from_arrays(
+           [["A", "B", "C"] * 2, [1, 2, 3, 4, 5, 6]], names=["Let", "Num"]
+       ),
+   )
+   ser
+
+   pd.merge(df, ser.reset_index(), on=['Let', 'Num'])
+
+
 Here is another example with duplicate join keys in DataFrames:
 
 .. ipython:: python
@@ -749,8 +773,6 @@ Here is another example with duplicate join keys in DataFrames:
 
 Checking for duplicate keys
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-.. versionadded:: 0.21.0
 
 Users can use the ``validate`` argument to automatically check whether there
 are unexpected duplicates in their merge keys. Key uniqueness is checked before
@@ -814,10 +836,8 @@ The ``indicator`` argument will also accept string arguments, in which case the 
 
 .. _merging.dtypes:
 
-Merge Dtypes
+Merge dtypes
 ~~~~~~~~~~~~
-
-.. versionadded:: 0.19.0
 
 Merging will preserve the dtype of the join keys.
 
@@ -842,8 +862,6 @@ resulting dtype will be upcast.
 
    pd.merge(left, right, how='outer', on='key')
    pd.merge(left, right, how='outer', on='key').dtypes
-
-.. versionadded:: 0.20.0
 
 Merging will preserve ``category`` dtypes of the mergands. See also the section on :ref:`categoricals <categorical.merge>`.
 
@@ -883,7 +901,7 @@ The merged result:
 .. note::
 
    The category dtypes must be *exactly* the same, meaning the same categories and the ordered attribute.
-   Otherwise the result will coerce to ``object`` dtype.
+   Otherwise the result will coerce to the categories' dtype.
 
 .. note::
 
@@ -1255,7 +1273,7 @@ columns:
 
 .. ipython:: python
 
-   result = pd.merge(left, right, on='k', suffixes=['_l', '_r'])
+   result = pd.merge(left, right, on='k', suffixes=('_l', '_r'))
 
 .. ipython:: python
    :suppress:
@@ -1361,7 +1379,7 @@ Timeseries friendly merging
 
 .. _merging.merge_ordered:
 
-Merging Ordered Data
+Merging ordered data
 ~~~~~~~~~~~~~~~~~~~~
 
 A :func:`merge_ordered` function allows combining time series and other
@@ -1381,10 +1399,8 @@ fill/interpolate missing data:
 
 .. _merging.merge_asof:
 
-Merging AsOf
+Merging asof
 ~~~~~~~~~~~~
-
-.. versionadded:: 0.19.0
 
 A :func:`merge_asof` is similar to an ordered left-join except that we match on
 nearest key rather than equal keys. For each row in the ``left`` ``DataFrame``,
@@ -1464,3 +1480,61 @@ exclude exact matches on time. Note that though we exclude the exact matches
                  by='ticker',
                  tolerance=pd.Timedelta('10ms'),
                  allow_exact_matches=False)
+
+.. _merging.compare:
+
+Comparing objects
+-----------------
+
+The :meth:`~Series.compare` and :meth:`~DataFrame.compare` methods allow you to
+compare two DataFrame or Series, respectively, and summarize their differences.
+
+This feature was added in :ref:`V1.1.0 <whatsnew_110.dataframe_or_series_comparing>`.
+
+For example, you might want to compare two `DataFrame` and stack their differences
+side by side.
+
+.. ipython:: python
+
+   df = pd.DataFrame(
+       {
+           "col1": ["a", "a", "b", "b", "a"],
+           "col2": [1.0, 2.0, 3.0, np.nan, 5.0],
+           "col3": [1.0, 2.0, 3.0, 4.0, 5.0]
+       },
+       columns=["col1", "col2", "col3"],
+   )
+   df
+
+.. ipython:: python
+
+   df2 = df.copy()
+   df2.loc[0, 'col1'] = 'c'
+   df2.loc[2, 'col3'] = 4.0
+   df2
+
+.. ipython:: python
+
+   df.compare(df2)
+
+By default, if two corresponding values are equal, they will be shown as ``NaN``.
+Furthermore, if all values in an entire row / column, the row / column will be
+omitted from the result. The remaining differences will be aligned on columns.
+
+If you wish, you may choose to stack the differences on rows.
+
+.. ipython:: python
+
+   df.compare(df2, align_axis=0)
+
+If you wish to keep all original rows and columns, set `keep_shape` argument
+to ``True``.
+
+.. ipython:: python
+
+   df.compare(df2, keep_shape=True)
+
+You may also keep all the original values even if they are equal.
+
+.. ipython:: python
+   df.compare(df2, keep_shape=True, keep_equal=True)

@@ -28,19 +28,15 @@ Attributes and underlying data
    :toctree: api/
 
    DataFrame.dtypes
-   DataFrame.ftypes
-   DataFrame.get_dtype_counts
-   DataFrame.get_ftype_counts
+   DataFrame.info
    DataFrame.select_dtypes
    DataFrame.values
-   DataFrame.get_values
    DataFrame.axes
    DataFrame.ndim
    DataFrame.size
    DataFrame.shape
    DataFrame.memory_usage
    DataFrame.empty
-   DataFrame.is_copy
 
 Conversion
 ~~~~~~~~~~
@@ -48,11 +44,9 @@ Conversion
    :toctree: api/
 
    DataFrame.astype
-   DataFrame.convert_objects
+   DataFrame.convert_dtypes
    DataFrame.infer_objects
    DataFrame.copy
-   DataFrame.isna
-   DataFrame.notna
    DataFrame.bool
 
 Indexing, iteration
@@ -68,8 +62,8 @@ Indexing, iteration
    DataFrame.insert
    DataFrame.__iter__
    DataFrame.items
-   DataFrame.keys
    DataFrame.iteritems
+   DataFrame.keys
    DataFrame.iterrows
    DataFrame.itertuples
    DataFrame.lookup
@@ -116,7 +110,7 @@ Binary operator functions
    DataFrame.combine
    DataFrame.combine_first
 
-Function application, GroupBy & Window
+Function application, GroupBy & window
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
@@ -134,7 +128,7 @@ Function application, GroupBy & Window
 
 .. _api.dataframe.stats:
 
-Computations / Descriptive Stats
+Computations / descriptive stats
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
@@ -143,9 +137,6 @@ Computations / Descriptive Stats
    DataFrame.all
    DataFrame.any
    DataFrame.clip
-   DataFrame.clip_lower
-   DataFrame.clip_upper
-   DataFrame.compound
    DataFrame.corr
    DataFrame.corrwith
    DataFrame.count
@@ -177,8 +168,9 @@ Computations / Descriptive Stats
    DataFrame.std
    DataFrame.var
    DataFrame.nunique
+   DataFrame.value_counts
 
-Reindexing / Selection / Label manipulation
+Reindexing / selection / label manipulation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
@@ -199,13 +191,11 @@ Reindexing / Selection / Label manipulation
    DataFrame.idxmin
    DataFrame.last
    DataFrame.reindex
-   DataFrame.reindex_axis
    DataFrame.reindex_like
    DataFrame.rename
    DataFrame.rename_axis
    DataFrame.reset_index
    DataFrame.sample
-   DataFrame.select
    DataFrame.set_axis
    DataFrame.set_index
    DataFrame.tail
@@ -219,10 +209,18 @@ Missing data handling
 .. autosummary::
    :toctree: api/
 
+   DataFrame.backfill
+   DataFrame.bfill
    DataFrame.dropna
+   DataFrame.ffill
    DataFrame.fillna
-   DataFrame.replace
    DataFrame.interpolate
+   DataFrame.isna
+   DataFrame.isnull
+   DataFrame.notna
+   DataFrame.notnull
+   DataFrame.pad
+   DataFrame.replace
 
 Reshaping, sorting, transposing
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -242,24 +240,25 @@ Reshaping, sorting, transposing
    DataFrame.unstack
    DataFrame.swapaxes
    DataFrame.melt
+   DataFrame.explode
    DataFrame.squeeze
-   DataFrame.to_panel
    DataFrame.to_xarray
    DataFrame.T
    DataFrame.transpose
 
-Combining / joining / merging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Combining / comparing / joining / merging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
 
    DataFrame.append
    DataFrame.assign
+   DataFrame.compare
    DataFrame.join
    DataFrame.merge
    DataFrame.update
 
-Time series-related
+Time Series-related
 ~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
@@ -276,6 +275,21 @@ Time series-related
    DataFrame.to_timestamp
    DataFrame.tz_convert
    DataFrame.tz_localize
+
+.. _api.frame.metadata:
+
+Metadata
+~~~~~~~~
+
+:attr:`DataFrame.attrs` is a dictionary for storing global metadata for this DataFrame.
+
+.. warning:: ``DataFrame.attrs`` is considered experimental and may change without warning.
+
+.. autosummary::
+   :toctree: api/
+
+   DataFrame.attrs
+
 
 .. _api.dataframe.plotting:
 
@@ -312,16 +326,36 @@ specific plotting methods of the form ``DataFrame.plot.<kind>``.
    DataFrame.boxplot
    DataFrame.hist
 
-Serialization / IO / Conversion
+
+.. _api.frame.sparse:
+
+Sparse accessor
+~~~~~~~~~~~~~~~
+
+Sparse-dtype specific methods and attributes are provided under the
+``DataFrame.sparse`` accessor.
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/accessor_attribute.rst
+
+   DataFrame.sparse.density
+
+.. autosummary::
+   :toctree: api/
+
+   DataFrame.sparse.from_spmatrix
+   DataFrame.sparse.to_coo
+   DataFrame.sparse.to_dense
+
+
+Serialization / IO / conversion
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 .. autosummary::
    :toctree: api/
 
-   DataFrame.from_csv
    DataFrame.from_dict
-   DataFrame.from_items
    DataFrame.from_records
-   DataFrame.info
    DataFrame.to_parquet
    DataFrame.to_pickle
    DataFrame.to_csv
@@ -334,18 +368,9 @@ Serialization / IO / Conversion
    DataFrame.to_feather
    DataFrame.to_latex
    DataFrame.to_stata
-   DataFrame.to_msgpack
    DataFrame.to_gbq
    DataFrame.to_records
-   DataFrame.to_sparse
-   DataFrame.to_dense
    DataFrame.to_string
    DataFrame.to_clipboard
+   DataFrame.to_markdown
    DataFrame.style
-
-Sparse
-~~~~~~
-.. autosummary::
-   :toctree: api/
-
-   SparseDataFrame.to_coo

@@ -3,7 +3,7 @@
 .. _api.arrays:
 
 =============
-Pandas Arrays
+pandas arrays
 =============
 
 .. currentmodule:: pandas
@@ -12,7 +12,8 @@ For most data types, pandas uses NumPy arrays as the concrete
 objects contained with a :class:`Index`, :class:`Series`, or
 :class:`DataFrame`.
 
-For some data types, pandas extends NumPy's type system.
+For some data types, pandas extends NumPy's type system. String aliases for these types
+can be found at :ref:`basics.dtypes`.
 
 =================== ========================= ================== =============================
 Kind of Data        Pandas Data Type          Scalar             Array
@@ -24,6 +25,8 @@ Intervals           :class:`IntervalDtype`    :class:`Interval`  :ref:`api.array
 Nullable Integer    :class:`Int64Dtype`, ...  (none)             :ref:`api.arrays.integer_na`
 Categorical         :class:`CategoricalDtype` (none)             :ref:`api.arrays.categorical`
 Sparse              :class:`SparseDtype`      (none)             :ref:`api.arrays.sparse`
+Strings             :class:`StringDtype`      :class:`str`       :ref:`api.arrays.string`
+Boolean (with NA)   :class:`BooleanDtype`     :class:`bool`      :ref:`api.arrays.bool`
 =================== ========================= ================== =============================
 
 Pandas and third-party libraries can extend NumPy's type system (see :ref:`extending.extension-types`).
@@ -37,7 +40,7 @@ stored in a :class:`Series`, :class:`Index`, or as a column in a :class:`DataFra
 
 .. _api.arrays.datetime:
 
-Datetime Data
+Datetime data
 -------------
 
 NumPy cannot natively represent timezone-aware datetimes. Pandas supports this
@@ -144,6 +147,7 @@ If the data are tz-aware, then every value in the array must have the same timez
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
    arrays.DatetimeArray
 
@@ -155,7 +159,7 @@ If the data are tz-aware, then every value in the array must have the same timez
 
 .. _api.arrays.timedelta:
 
-Timedelta Data
+Timedelta data
 --------------
 
 NumPy can natively represent timedeltas. Pandas provides :class:`Timedelta`
@@ -204,12 +208,13 @@ A collection of timedeltas may be stored in a :class:`TimedeltaArray`.
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
    arrays.TimedeltaArray
 
 .. _api.arrays.period:
 
-Timespan Data
+Timespan data
 -------------
 
 Pandas represents spans of times as :class:`Period` objects.
@@ -263,6 +268,7 @@ Every period in a ``PeriodArray`` must have the same ``freq``.
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
    arrays.PeriodArray
 
@@ -274,7 +280,7 @@ Every period in a ``PeriodArray`` must have the same ``freq``.
 
 .. _api.arrays.interval:
 
-Interval Data
+Interval data
 -------------
 
 Arbitrary intervals can be represented as :class:`Interval` objects.
@@ -292,6 +298,7 @@ Properties
    Interval.closed
    Interval.closed_left
    Interval.closed_right
+   Interval.is_empty
    Interval.left
    Interval.length
    Interval.mid
@@ -304,6 +311,7 @@ A collection of intervals may be stored in an :class:`arrays.IntervalArray`.
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
    arrays.IntervalArray
 
@@ -313,9 +321,34 @@ A collection of intervals may be stored in an :class:`arrays.IntervalArray`.
 
    IntervalDtype
 
+
+.. Those attributes and methods are included in the API because the docstrings
+.. of IntervalIndex and IntervalArray are shared. Including it here to make
+.. sure a docstring page is built for them to avoid warnings
+
+..
+    .. autosummary::
+      :toctree: api/
+
+      arrays.IntervalArray.left
+      arrays.IntervalArray.right
+      arrays.IntervalArray.closed
+      arrays.IntervalArray.mid
+      arrays.IntervalArray.length
+      arrays.IntervalArray.is_empty
+      arrays.IntervalArray.is_non_overlapping_monotonic
+      arrays.IntervalArray.from_arrays
+      arrays.IntervalArray.from_tuples
+      arrays.IntervalArray.from_breaks
+      arrays.IntervalArray.contains
+      arrays.IntervalArray.overlaps
+      arrays.IntervalArray.set_closed
+      arrays.IntervalArray.to_tuples
+
+
 .. _api.arrays.integer_na:
 
-Nullable Integer
+Nullable integer
 ----------------
 
 :class:`numpy.ndarray` cannot natively represent integer-data with missing values.
@@ -323,6 +356,7 @@ Pandas provides this through :class:`arrays.IntegerArray`.
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
    arrays.IntegerArray
 
@@ -341,7 +375,7 @@ Pandas provides this through :class:`arrays.IntegerArray`.
 
 .. _api.arrays.categorical:
 
-Categorical Data
+Categorical data
 ----------------
 
 Pandas defines a custom data type for representing data that can take only a
@@ -406,16 +440,17 @@ data. See :ref:`api.series.cat` for more.
 
 .. _api.arrays.sparse:
 
-Sparse Data
+Sparse data
 -----------
 
 Data where a single value is repeated many times (e.g. ``0`` or ``NaN``) may
-be stored efficiently as a :class:`SparseArray`.
+be stored efficiently as a :class:`arrays.SparseArray`.
 
 .. autosummary::
    :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
 
-   SparseArray
+   arrays.SparseArray
 
 .. autosummary::
    :toctree: api/
@@ -427,6 +462,51 @@ The ``Series.sparse`` accessor may be used to access sparse-specific attributes
 and methods if the :class:`Series` contains sparse values. See
 :ref:`api.series.sparse` for more.
 
+
+.. _api.arrays.string:
+
+Text data
+---------
+
+When working with text data, where each valid element is a string or missing,
+we recommend using :class:`StringDtype` (with the alias ``"string"``).
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
+
+   arrays.StringArray
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
+
+   StringDtype
+
+The ``Series.str`` accessor is available for ``Series`` backed by a :class:`arrays.StringArray`.
+See :ref:`api.series.str` for more.
+
+
+.. _api.arrays.bool:
+
+Boolean data with missing values
+--------------------------------
+
+The boolean dtype (with the alias ``"boolean"``) provides support for storing
+boolean data (True, False values) with missing values, which is not possible
+with a bool :class:`numpy.ndarray`.
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
+
+   arrays.BooleanArray
+
+.. autosummary::
+   :toctree: api/
+   :template: autosummary/class_without_autosummary.rst
+
+   BooleanDtype
 
 
 .. Dtype attributes which are manually listed in their docstrings: including
